@@ -1,0 +1,21 @@
+version: "3"
+services:
+  web:
+    build: .
+    ports:
+      - 5000:5000
+    volumes:
+      - .:/code
+    environment:
+      FLASK_ENV: development
+  elastic:
+    image: elasticsearch:7.5.1
+    ports:
+      - 9200:9200
+    environment:
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+`
