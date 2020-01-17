@@ -1,4 +1,8 @@
 # Project: bookworm
 
 ### Prerequisites
-- Python 3.7
+- Docker
+
+### Getting Started
+``docker-compose up --build``
+
