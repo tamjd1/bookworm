@@ -1,10 +1,11 @@
 ![bookworm logo](logo.png)
- 
-# Project: bookworm
+# 
+
+### Overview
+Project: bookworm
 
 ### Prerequisites
 - Docker
 
 ### Getting Started
 ``docker-compose up --build``
-
