@@ -1,3 +1,5 @@
+![bookworm logo](logo.png)
+ 
 # Project: bookworm
 
 ### Prerequisites
