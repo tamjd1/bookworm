@@ -8,4 +8,6 @@ Project: bookworm
 - Docker
 
 ### Getting Started
-``docker-compose up --build``
+``docker-compose build``
+
+``docker-compose up``

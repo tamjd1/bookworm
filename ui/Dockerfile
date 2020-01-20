@@ -1,5 +1,5 @@
 # base image
-FROM node:12.2.0-alpine
+FROM node:12.14.1-alpine
 
 # set working directory
 WORKDIR /app
@@ -14,4 +14,3 @@ RUN npm install react-scripts@3.0.1 -g --silent
 
 # start app
 CMD ["npm", "start"]
-
