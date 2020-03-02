@@ -9,23 +9,23 @@ services:
       - .:/code
     environment:
       FLASK_ENV: development
-  elastic:
-    image: elasticsearch:7.5.1
-    ports:
-      - 9200:9200
-    environment:
-      discovery.type: single-node
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-  bookworm-ui:
-    container_name: bookworm-ui
-    build: ./ui
-    volumes:
-      - ./ui:/app
-      - /app/node_modules
-    ports:
-      - 3000:3000
-    environment:
-      NODE_ENV: development
+#  elastic:
+#    image: elasticsearch:7.5.1
+#    ports:
+#      - 9200:9200
+#    environment:
+#      discovery.type: single-node
+#    ulimits:
+#      memlock:
+#        soft: -1
+#        hard: -1
+#  bookworm-ui:
+#    container_name: bookworm-ui
+#    build: ./ui
+#    volumes:
+#      - ./ui:/app
+#      - /app/node_modules
+#    ports:
+#      - 3000:3000
+#    environment:
+#      NODE_ENV: development
