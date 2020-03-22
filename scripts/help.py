@@ -58,7 +58,7 @@ def api_help():
                 }
         },
         {
-            "API": "/highlight/<int:bookmark_id>",
+            "API": "/highlights/<int:bookmark_id>",
             "description": "to get get summary highlights",
             "method": "GET",
             "responseCode": 200,

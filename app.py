@@ -1,18 +1,12 @@
-import requests
 from flask import Flask, request
-from elasticsearch import Elasticsearch
 from rapidjson import dumps
+
 from scripts.utils import get_headers
 from scripts.help import api_help
 from scripts import bookmark
+from scripts import database, config
 
 app = Flask(__name__)
-es = Elasticsearch(['http://elastic:9200/'], verify_certs=True)
-
-
-@app.route('/elastic')
-def elastic():
-    return es.info()
 
 
 @app.route('/health')
@@ -71,3 +65,8 @@ def get_summary_highlights(bookmark_id):
     print('Getting summary highlights for {bookmark_id}...'.format(bookmark_id=bookmark_id))
     response = bookmark.get_summary_highlights(bookmark_id)
     return dumps(response), 200, get_headers(response)
+
+
+@app.before_first_request
+def initialize_db_connection():
+    database.initialize_connection(config.database)

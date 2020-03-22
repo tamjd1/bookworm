@@ -11,3 +11,6 @@ Project: bookworm
 ``docker-compose build``
 
 ``docker-compose up``
+
+### To Delete Database volume
+``docker-compose down --volumes``
