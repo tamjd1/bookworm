@@ -1,4 +1,5 @@
 venv
+.pgdata
 .idea
 __pycache__/
 
