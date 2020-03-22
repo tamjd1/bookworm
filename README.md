@@ -12,5 +12,6 @@ Project: bookworm
 
 ``docker-compose up``
 
-### To Delete Database volume
+### To delete database volume and force recreate containers 
 ``docker-compose down --volumes``
+``docker-compose up --force-recreate``
