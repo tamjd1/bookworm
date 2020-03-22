@@ -4,3 +4,5 @@ bs4==0.0.1
 nltk==3.4.5
 elasticsearch==7.1.0
 python-rapidjson==0.9.1
+pyyaml==5.3
+psycopg2==2.8.4

@@ -1,31 +1,53 @@
 version: "3.7"
 services:
+  database:
+    image: postgres:alpine
+    restart: always
+    env_file:
+      - database.env
+    container_name: pg_container
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+
   bookworm:
-    container_name: bookworm
     build: .
+    container_name: bookworm
+    links:
+      - database
     ports:
       - 5000:5000
     volumes:
       - .:/code
     environment:
       FLASK_ENV: development
-  elastic:
-    image: elasticsearch:7.5.1
-    ports:
-      - 9200:9200
-    environment:
-      discovery.type: single-node
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-  bookworm-ui:
-    container_name: bookworm-ui
-    build: ./ui
-    volumes:
-      - ./ui:/app
-      - /app/node_modules
-    ports:
-      - 3000:3000
-    environment:
-      NODE_ENV: development
+    env_file:
+      - database.env
+    depends_on:
+      - database
+
+volumes:
+  pgdata: {}
+
+#  elastic:
+#    image: elasticsearch:7.5.1
+#    ports:
+#      - 9200:9200
+#    environment:
+#      discovery.type: single-node
+#    ulimits:
+#      memlock:
+#        soft: -1
+#        hard: -1
+#  bookworm-ui:
+#    container_name: bookworm-ui
+#    build: ./ui
+#    volumes:
+#      - ./ui:/app
+#      - /app/node_modules
+#    ports:
+#      - 3000:3000
+#    environment:
+#      NODE_ENV: development
