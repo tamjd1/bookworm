@@ -1,5 +1,6 @@
 
 from flask import request
+import time
 
 
 def get_headers(response):
@@ -17,3 +18,8 @@ def get_headers(response):
         ('Connection', 'close'),
         ('content-length', str(len(response)))
     ]
+
+
+def get_epoch_millis():
+    """Get the current epoch time in milliseconds"""
+    return int(time.time() * 1000)
