@@ -1,10 +1,10 @@
 from flask import Flask, request
 from rapidjson import dumps
 
-from scripts.utils import get_headers
-from scripts.help import api_help
-from scripts import bookmark
-from scripts import database, config
+from bookmark.utils import get_headers
+from bookmark.help import api_help
+from bookmark import bookmark
+from bookmark import database, config
 
 app = Flask(__name__)
 
