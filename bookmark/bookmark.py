@@ -7,9 +7,10 @@ import requests
 from bookmark import database
 from bookmark.utils import get_epoch_millis
 from bookmark.query import *
+from bookmark import analyzer
 
 
-# todo : connect add_bookmark method to highlighter function
+# todo :
 #        add algorithm to generate recommended article links based on keywords of interest
 #        write a proper search algorithm
 
@@ -33,22 +34,22 @@ def search(search_query):
 
 def add_bookmark(payload):
     print(payload)
-
-    # TODO: The following task would be the result of backend analyzer
-    # TODO: This needs to be updated after running backend jobs
-    # TODO: Update recommendation table
-    # TODO: Update keyword score table
-    title = payload['link']  # needs to be changed
-    fetched_data = requests.get(payload['link'])
-    raw_data = 'Humans explored space for the first time, taking their first footsteps on the Sun.'  # For testing
-    sanitized_data = 'Humans explored space for the first time, taking their first footsteps on the Sun.' # For testing
-    highlights = '{}'
+    raw_content = requests.get(payload['link']).text
+    title = analyzer.get_title(raw_content)
+    sanitized_content = analyzer.sanitize(raw_content)
+    word_frequency = analyzer.determine_word_frequency(sanitized_content)
+    highlights = analyzer.generate_highlights(sanitized_content, word_frequency)
     with database.con.cursor() as cur:
         cur.execute(ADD_BOOKMARK.format(
             title=title, link=payload['link'], created_at=get_epoch_millis(), updated_at=get_epoch_millis(),
-            highlights=highlights, raw_data=raw_data, sanitized_data=sanitized_data))
+            highlights=highlights, raw_data=raw_content, sanitized_data=sanitized_content
+        ))
         bookmark_id = cur.fetchone()[0]
         database.con.commit()
+
+        # TODO: Update recommendation table
+        # TODO: Update keyword score table
+
     return {"id": bookmark_id, "link": payload['link']}
 
 
