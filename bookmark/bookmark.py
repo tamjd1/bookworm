@@ -4,9 +4,14 @@ Bookmark functionality
 """
 import requests
 
-from scripts import database
-from scripts.utils import get_epoch_millis
-from scripts.query import *
+from bookmark import database
+from bookmark.utils import get_epoch_millis
+from bookmark.query import *
+
+
+# todo : connect add_bookmark method to highlighter function
+#        add algorithm to generate recommended article links based on keywords of interest
+#        write a proper search algorithm
 
 
 def search(search_query):
