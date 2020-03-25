@@ -1,10 +1,10 @@
 from flask import Flask, request
 from rapidjson import dumps
 
-from bookmark.utils import get_headers
-from bookmark.help import api_help
-from bookmark import bookmark
-from bookmark import database, config
+from bookworm.utils import get_headers
+from bookworm.help import api_help
+from bookworm import bookmark
+from bookworm import database, config
 
 app = Flask(__name__)
 

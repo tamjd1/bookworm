@@ -5,6 +5,8 @@ from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize, sent_tokenize
 import rapidjson as rj
 
+from bookworm import database
+
 download("stopwords")
 download("punkt")
 
@@ -23,20 +25,46 @@ def get_title(raw):
     return parsed.find("title").text
 
 
-def determine_word_frequency(content):
+def determine_word_scores(content):
     stop_words = set(stopwords.words("english"))
     words = word_tokenize(content)
     stemmer = PorterStemmer()
-    frequency_table = dict()
+    frequency_table = {}
+    word_table = {}
     for word in words:
-        word = stemmer.stem(word)
-        if word in stop_words:
+        stemmed_word = stemmer.stem(word)
+        if stemmed_word in stop_words:
             continue
-        if word in frequency_table:
-            frequency_table[word] += 1
+        word_table[stemmed_word] = word
+        if stemmed_word in frequency_table:
+            frequency_table[stemmed_word][1] += 1
         else:
-            frequency_table[word] = 1
-    return frequency_table
+            frequency_table[stemmed_word] = [word, 1]
+
+    df_scores = {}
+    with database.con.cursor() as cur:
+        cur.execute(f"""select count(distinct bookmark_id), stem from bookworm.keywords
+                       where stem in {frequency_table.keys()}
+                       group by stem
+        """)
+        for row in cur.fetchall():
+            df_scores[row[0]] = row[1]
+
+        cur.execute("select count(*) from bookworm.bookmarks")
+        data = cur.fetchone()
+        num_documents = data[0]
+
+    scores = {
+        "word_count": len(words),
+        "word_scores": [{
+            "stem": stem,
+            "word": word,
+            "count": count,
+            "tf": count/len(words),
+            "idf": num_documents/df_scores[stem]
+        } for stem, (word, count) in frequency_table.items()]
+    }
+    return scores
 
 
 def generate_highlights(content, frequency_table, num_highlights=1):
@@ -46,9 +74,9 @@ def generate_highlights(content, frequency_table, num_highlights=1):
     for sentence in sentences:
         sentence_key = sentence[:10]
         sentence_word_count = 0
-        for word in frequency_table:
+        for word, score in frequency_table.items():
             if word in sentence.lower():
-                word_score = frequency_table[word]
+                word_score = score
                 sentence_word_count += 1
                 if sentence_key in sentence_scores:
                     sentence_scores[sentence_key] += word_score
@@ -77,6 +105,3 @@ def generate_highlights(content, frequency_table, num_highlights=1):
                 break
 
     return rj.dumps(content_highlights)
-
-
-

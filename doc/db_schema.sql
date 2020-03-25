@@ -7,16 +7,19 @@ CREATE TABLE bookworm.bookmarks (
 	updated_at bigint NOT NULL,
 	visited_count int DEFAULT 1,
 	highlights jsonb NULL,
-	raw_data bytea NULL,
-	sanitized_data bytea NULL
+	raw_data bytes NULL,
+	sanitized_data bytes NULL
 );
 
 
 DROP TABLE IF EXISTS bookworm.keyword_scores CASCADE;
 CREATE TABLE bookworm.keyword_scores (
 	id serial PRIMARY KEY,
-	keywords text NOT NULL,
-	tf_ids_scores numeric NULL,
+	stem text NOT NULL,
+	word text NOT NULL,
+	count int NOT NULL,
+	tf float not null,
+	idf float not null,
 	bookmark_id int REFERENCES bookworm.bookmarks(id)
 	ON DELETE CASCADE
 );

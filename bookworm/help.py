@@ -35,7 +35,7 @@ def api_help():
         },
         {
             "API": "/metadata",
-            "description": "to get bookmark metadata",
+            "description": "to get bookworm metadata",
             "method": "GET",
             "responseCode": 200,
             "response":
