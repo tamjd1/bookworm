@@ -4,10 +4,10 @@ Bookmark functionality
 """
 import requests
 
-from bookmark import database
-from bookmark.utils import get_epoch_millis
-from bookmark.query import *
-from bookmark import analyzer
+from bookworm import database
+from bookworm.utils import get_epoch_millis
+from bookworm.query import *
+from bookworm import analyzer
 
 
 # todo :
@@ -37,18 +37,26 @@ def add_bookmark(payload):
     raw_content = requests.get(payload['link']).text
     title = analyzer.get_title(raw_content)
     sanitized_content = analyzer.sanitize(raw_content)
-    word_frequency = analyzer.determine_word_frequency(sanitized_content)
+    scores = analyzer.determine_word_scores(sanitized_content)
+    word_count = scores["word_count"]
+    word_scores = scores["word_scores"]
+    word_frequency = {x["word"]: x["count"] for x in word_scores}
     highlights = analyzer.generate_highlights(sanitized_content, word_frequency)
     with database.con.cursor() as cur:
         cur.execute(ADD_BOOKMARK.format(
             title=title, link=payload['link'], created_at=get_epoch_millis(), updated_at=get_epoch_millis(),
-            highlights=highlights, raw_data=raw_content, sanitized_data=sanitized_content
+            highlights=highlights, raw_data=raw_content, sanitized_data=sanitized_content, word_count=word_count
         ))
         bookmark_id = cur.fetchone()[0]
         database.con.commit()
 
-        # TODO: Update recommendation table
-        # TODO: Update keyword score table
+        values = [(bookmark_id, x["word"], x["stem"], x["count"], x["tf"], x["idf"]) for x in word_scores]
+        cur.execute("""
+            insert into bookworm.keywords (bookmark_id, word, stem, count, tf, idf)
+            values {}
+        """.format(values))
+
+        # TODO: Update recommendation table (in subprocess)
 
     return {"id": bookmark_id, "link": payload['link']}
 

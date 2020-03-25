@@ -11,13 +11,16 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
       updated_at bigint NOT NULL,
       visited_count int DEFAULT 1,
       highlights jsonb NULL,
-      raw_data bytea NULL,
-      sanitized_data bytea NULL
+      raw_data bytes NULL,
+      sanitized_data bytes NULL
     );
     CREATE TABLE $POSTGRES_SCHEMA.keyword_scores (
       id serial PRIMARY KEY,
-      keywords text NOT NULL,
-      tf_ids_scores numeric NULL,
+      stem text NOT NULL,
+      word text NOT NULL,
+      count int NOT NULL,
+      tf float not null,
+      idf float not null,
       bookmark_id int REFERENCES $POSTGRES_SCHEMA.bookmarks(id)
       ON DELETE CASCADE
     );

@@ -2,7 +2,7 @@
 
 import psycopg2
 
-from bookmark.config import DatabaseConfig
+from bookworm.config import DatabaseConfig
 
 
 class DatabaseConnector:
