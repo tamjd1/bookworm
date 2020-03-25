@@ -12,20 +12,26 @@ from bookworm import analyzer
 
 # todo :
 #        add algorithm to generate recommended article links based on keywords of interest
-#        write a proper search algorithm
 
 
 def search(search_query):
     results = []
     print(search_query)
+    stemmed_search_terms = analyzer.word_stemmer(search_query)
     with database.con.cursor() as cur:
-        cur.execute(SEARCH.format(search_query=search_query))
+        cur.execute(f"""select distinct a.id, a.link, a.title, a.sanitized_data from bookworm.bookmarks a
+                        join bookworm.keyword_scores b on a.id = b.bookmark_id
+                        where b.stem in {stemmed_search_terms}
+                          and b.tf_idf_score > 0
+                        order by b.tf_idf_score
+                        limit 10
+        """)
         for row in cur.fetchall():
             results.append({
                 "id": row[0],
                 "link": row[1],
                 "title": row[2],
-                "matchedText": row[3].tobytes()
+                "matchedText": "...".join(analyzer.get_matching_sentences(row[3].tobytes(), search_query))
             })
             cur.execute(VISIT_BOOKMARK.format(bookmark_id=row[0]))
             database.con.commit()

@@ -108,3 +108,25 @@ def generate_highlights(content, frequency_table, num_highlights=1):
                 break
 
     return rj.dumps(content_highlights)
+
+
+def word_stemmer(text):
+    words = word_tokenize(text)
+    stemmer = PorterStemmer()
+    stemmed_words = []
+    for word in words:
+        stemmed_words.append(stemmer.stem(word))
+
+    return stemmed_words
+
+
+def get_matching_sentences(text, search_term):
+    keywords = word_tokenize(search_term)
+    sentences = sent_tokenize(text)
+    matching_sentences = []
+    for s in sentences:
+        for w in keywords:
+            if w in s:
+                matching_sentences.append(s)
+    return matching_sentences
+
