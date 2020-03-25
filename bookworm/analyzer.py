@@ -30,12 +30,10 @@ def determine_word_scores(content):
     words = word_tokenize(content)
     stemmer = PorterStemmer()
     frequency_table = {}
-    word_table = {}
     for word in words:
         stemmed_word = stemmer.stem(word)
         if stemmed_word in stop_words:
             continue
-        word_table[stemmed_word] = word
         if stemmed_word in frequency_table:
             frequency_table[stemmed_word][1] += 1
         else:
@@ -43,12 +41,12 @@ def determine_word_scores(content):
 
     df_scores = {}
     with database.con.cursor() as cur:
-        cur.execute(f"""select count(distinct bookmark_id), stem from bookworm.keywords
+        cur.execute(f"""select count(distinct bookmark_id), stem from bookworm.keyword_scores
                        where stem in {frequency_table.keys()}
                        group by stem
         """)
         for row in cur.fetchall():
-            df_scores[row[0]] = row[1]
+            df_scores[row[1]] = int(row[0]) + 1
 
         cur.execute("select count(*) from bookworm.bookmarks")
         data = cur.fetchone()
@@ -56,14 +54,19 @@ def determine_word_scores(content):
 
     scores = {
         "word_count": len(words),
-        "word_scores": [{
+        "word_scores": []
+    }
+
+    for stem, (word, count) in frequency_table.items():
+        tf = count / len(words)
+        idf = num_documents / df_scores[stem]
+        scores["word_scores"].append({
             "stem": stem,
             "word": word,
             "count": count,
-            "tf": count/len(words),
-            "idf": num_documents/df_scores[stem]
-        } for stem, (word, count) in frequency_table.items()]
-    }
+            "tf_idf_score": tf*idf
+        })
+
     return scores
 
 

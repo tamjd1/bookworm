@@ -18,8 +18,7 @@ CREATE TABLE bookworm.keyword_scores (
 	stem text NOT NULL,
 	word text NOT NULL,
 	count int NOT NULL,
-	tf float not null,
-	idf float not null,
+	tf_idf_score float not null,
 	bookmark_id int REFERENCES bookworm.bookmarks(id)
 	ON DELETE CASCADE
 );

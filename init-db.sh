@@ -19,8 +19,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
       stem text NOT NULL,
       word text NOT NULL,
       count int NOT NULL,
-      tf float not null,
-      idf float not null,
+      tf_idf_score float not null,
       bookmark_id int REFERENCES $POSTGRES_SCHEMA.bookmarks(id)
       ON DELETE CASCADE
     );
