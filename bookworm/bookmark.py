@@ -50,9 +50,9 @@ def add_bookmark(payload):
         bookmark_id = cur.fetchone()[0]
         database.con.commit()
 
-        values = [(bookmark_id, x["word"], x["stem"], x["count"], x["tf"], x["idf"]) for x in word_scores]
+        values = [(bookmark_id, x["word"], x["stem"], x["count"], x["tf_idf_score"]) for x in word_scores]
         cur.execute("""
-            insert into bookworm.keywords (bookmark_id, word, stem, count, tf, idf)
+            insert into bookworm.keyword_scores (bookmark_id, word, stem, count, tf_idf_score)
             values {}
         """.format(values))
 
