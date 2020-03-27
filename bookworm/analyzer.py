@@ -41,7 +41,7 @@ def determine_word_scores(content):
 
     df_scores = {k: 1 for k in frequency_table.keys()}
     with database.con.cursor() as cur:
-        query = cur.mogrify("""select count(distinct bookmark_id), stem from bookworm.keyword_scores
+        query = cur.mogrify("""select count(distinct bookmark_id), stem from bookworm.keywords
                                where stem in %s
                                group by stem
         """, (tuple(frequency_table.keys()),))
@@ -125,9 +125,13 @@ def get_matching_sentences(text, search_term):
     keywords = word_tokenize(search_term)
     sentences = sent_tokenize(text)
     matching_sentences = []
+    match_count = 0
     for s in sentences:
         for w in keywords:
-            if w in s:
+            if w.lower() in s.lower():
                 matching_sentences.append(s)
+                match_count += 1
+        if match_count >= 3:
+            break
     return matching_sentences
 
