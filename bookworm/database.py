@@ -2,7 +2,7 @@
 
 import psycopg2
 
-from scripts.config import DatabaseConfig
+from bookworm.config import DatabaseConfig
 
 
 class DatabaseConnector:
