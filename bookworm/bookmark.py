@@ -6,7 +6,6 @@ import requests
 
 from bookworm import database
 from bookworm.utils import get_epoch_millis
-from bookworm.query import *
 from bookworm import analyzer
 
 
@@ -33,7 +32,8 @@ def search(search_query):
                 "title": row[2],
                 "matchedText": "...".join(analyzer.get_matching_sentences(row[3].tobytes(), search_query))
             })
-            cur.execute(VISIT_BOOKMARK.format(bookmark_id=row[0]))
+            cur.execute("UPDATE bookmarks SET visited_count = visited_count + 1 WHERE id = {bookmark_id}".format(
+                bookmark_id=row[0]))
             database.con.commit()
     return results
 
@@ -49,11 +49,11 @@ def add_bookmark(payload):
     word_frequency = {x["word"]: x["count"] for x in word_scores}
     highlights = analyzer.generate_highlights(sanitized_content, word_frequency)
     with database.con.cursor() as cur:
-        query = cur.mogrify("""INSERT INTO bookmarks (title, link, created_at, updated_at, highlights)
-                               VALUES (%(title)s, %(link)s, %(created_at)s, %(updated_at)s, %(highlights)s) 
+        query = cur.mogrify("""INSERT INTO bookmarks (chrome_id, title, link, created_at, updated_at, highlights)
+                               VALUES (%(chrome_id)s, %(title)s, %(link)s, %(created_at)s, %(updated_at)s, %(highlights)s) 
                                RETURNING id;
         """, {
-            "title": title, "link": payload['link'], "created_at": get_epoch_millis(),
+            "chrome_id": payload['chromeId'], "title": title, "link": payload['link'], "created_at": get_epoch_millis(),
             "updated_at": get_epoch_millis(), "highlights": highlights
         })
         cur.execute(query)
@@ -74,21 +74,25 @@ def add_bookmark(payload):
 def delete_bookmark(bookmark_id):
     print(bookmark_id)
     with database.con.cursor() as cur:
-        cur.execute(DELETE_BOOKMARK.format(id=bookmark_id))
+        cur.execute("DELETE FROM bookmarks WHERE id = {id};".format(id=bookmark_id))
         database.con.commit()
     return {"DELETED": "{bookmark_id}".format(bookmark_id=bookmark_id)}
 
 
 def get_metadata():
+    most_visited = None
+    latest = None
+    oldest = None
     with database.con.cursor() as cur:
-        cur.execute(META_DATA_TOTAL)
+        cur.execute("SELECT count(id) FROM bookmarks;")
         total = cur.fetchone()[0]
-        cur.execute(META_DATA_MOST_VISITED)
-        most_visited = cur.fetchone()[0]
-        cur.execute(META_DATA_LATEST)
-        latest = cur.fetchone()[0]
-        cur.execute(META_DATA_OLDEST)
-        oldest = cur.fetchone()[0]
+        if total > 0:
+            cur.execute("SELECT title FROM bookmarks WHERE visited_count = (SELECT max(visited_count) FROM bookmarks);")
+            most_visited = cur.fetchone()[0]
+            cur.execute("SELECT title FROM bookmarks WHERE created_at = (SELECT max(created_at) FROM bookmarks);")
+            latest = cur.fetchone()[0]
+            cur.execute("SELECT title FROM bookmarks WHERE created_at = (SELECT min(created_at) FROM bookmarks);")
+            oldest = cur.fetchone()[0]
 
     return {
         "totalBookmarks": total,
@@ -101,7 +105,7 @@ def get_metadata():
 def get_recommended():
     result = []
     with database.con.cursor() as cur:
-        cur.execute(GET_RECOMMENDED)
+        cur.execute("SELECT title, highlights FROM recommendations;")
         for row in cur.fetchall():
             result.append({
                 "title": row[0],
@@ -112,11 +116,16 @@ def get_recommended():
 
 def get_summary_highlights(bookmark_id):
     print(bookmark_id)
+    title = None
+    highlights = None
     with database.con.cursor() as cur:
-        cur.execute(GET_SUMMARY_HIGHLIGHTS.format(bookmark_id=bookmark_id))
+        cur.execute("SELECT title, highlights FROM bookmarks WHERE id = {bookmark_id};".format(bookmark_id=bookmark_id))
         data = cur.fetchone()
+        if data:
+            title = data[0]
+            highlights = data[1]
 
     return {
-        "title": data[0],
-        "highlights": data[1]
+        "title": title,
+        "highlights": highlights
     }
