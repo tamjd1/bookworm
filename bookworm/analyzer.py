@@ -39,14 +39,15 @@ def determine_word_scores(content):
         else:
             frequency_table[stemmed_word] = [word, 1]
 
-    df_scores = {}
+    df_scores = {k: 1 for k in frequency_table.keys()}
     with database.con.cursor() as cur:
-        cur.execute(f"""select count(distinct bookmark_id), stem from bookworm.keyword_scores
-                       where stem in {frequency_table.keys()}
-                       group by stem
-        """)
+        query = cur.mogrify("""select count(distinct bookmark_id), stem from bookworm.keyword_scores
+                               where stem in %s
+                               group by stem
+        """, (tuple(frequency_table.keys()),))
+        cur.execute(query)
         for row in cur.fetchall():
-            df_scores[row[1]] = int(row[0]) + 1
+            df_scores[row[1]] += int(row[0])
 
         cur.execute("select count(*) from bookworm.bookmarks")
         data = cur.fetchone()
