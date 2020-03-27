@@ -5,6 +5,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     CREATE SCHEMA $POSTGRES_SCHEMA;
     CREATE TABLE $POSTGRES_SCHEMA.bookmarks (
       id serial PRIMARY KEY,
+      chrome_id int NOT NULL,
       title text NOT NULL,
       link text NOT NULL,
       created_at bigint NOT NULL,

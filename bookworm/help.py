@@ -18,6 +18,7 @@ def api_help():
             "description": "to add bookmark specifically from bookworm",
             "method": "POST",
             "payload": {
+                "chromeId": 2,
                 "link": "link to bookmark"
             },
             "responseCode": 200,
