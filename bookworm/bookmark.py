@@ -49,18 +49,22 @@ def add_bookmark(payload):
     word_frequency = {x["word"]: x["count"] for x in word_scores}
     highlights = analyzer.generate_highlights(sanitized_content, word_frequency)
     with database.con.cursor() as cur:
-        cur.execute(ADD_BOOKMARK.format(
-            title=title, link=payload['link'], created_at=get_epoch_millis(), updated_at=get_epoch_millis(),
-            highlights=highlights, raw_data=raw_content, sanitized_data=sanitized_content, word_count=word_count
-        ))
+        query = cur.mogrify("""INSERT INTO bookmarks (title, link, created_at, updated_at, highlights)
+                               VALUES (%(title)s, %(link)s, %(created_at)s, %(updated_at)s, %(highlights)s) 
+                               RETURNING id;
+        """, {
+            "title": title, "link": payload['link'], "created_at": get_epoch_millis(),
+            "updated_at": get_epoch_millis(), "highlights": highlights
+        })
+        cur.execute(query)
         bookmark_id = cur.fetchone()[0]
-        database.con.commit()
 
         values = [(bookmark_id, x["word"], x["stem"], x["count"], x["tf_idf_score"]) for x in word_scores]
-        cur.execute("""
-            insert into bookworm.keyword_scores (bookmark_id, word, stem, count, tf_idf_score)
-            values {}
-        """.format(values))
+        args_str = b','.join(cur.mogrify("(%s,%s,%s,%s,%s)", x) for x in values)
+        query = cur.mogrify(b"insert into bookworm.keyword_scores (bookmark_id, word, stem, count, tf_idf_score) values " + args_str)
+        cur.execute(query)
+
+        database.con.commit()
 
         # TODO: Update recommendation table (in subprocess)
 
