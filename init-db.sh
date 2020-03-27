@@ -5,14 +5,15 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     CREATE SCHEMA $POSTGRES_SCHEMA;
     CREATE TABLE $POSTGRES_SCHEMA.bookmarks (
       id serial PRIMARY KEY,
+      chrome_id int NOT NULL,
       title text NOT NULL,
       link text NOT NULL,
       created_at bigint NOT NULL,
       updated_at bigint NOT NULL,
       visited_count int DEFAULT 1,
       highlights jsonb NULL,
-      raw_data bytes NULL,
-      sanitized_data bytes NULL
+      raw_data bytea NULL,
+      sanitized_data bytea NULL
     );
     CREATE TABLE $POSTGRES_SCHEMA.keyword_scores (
       id serial PRIMARY KEY,
