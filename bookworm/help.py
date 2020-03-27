@@ -18,6 +18,7 @@ def api_help():
             "description": "to add bookmark specifically from bookworm",
             "method": "POST",
             "payload": {
+                "chromeId": 2,
                 "link": "link to bookmark"
             },
             "responseCode": 200,
@@ -35,7 +36,7 @@ def api_help():
         },
         {
             "API": "/metadata",
-            "description": "to get bookmark metadata",
+            "description": "to get bookworm metadata",
             "method": "GET",
             "responseCode": 200,
             "response":

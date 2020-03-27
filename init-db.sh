@@ -5,6 +5,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     CREATE SCHEMA $POSTGRES_SCHEMA;
     CREATE TABLE $POSTGRES_SCHEMA.bookmarks (
       id serial PRIMARY KEY,
+      chrome_id int NOT NULL,
       title text NOT NULL,
       link text NOT NULL,
       created_at bigint NOT NULL,
@@ -14,12 +15,18 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
       raw_data bytea NULL,
       sanitized_data bytea NULL
     );
-    CREATE TABLE $POSTGRES_SCHEMA.keyword_scores (
+    CREATE TABLE $POSTGRES_SCHEMA.keywords (
       id serial PRIMARY KEY,
-      keywords text NOT NULL,
-      tf_ids_scores numeric NULL,
+      stem text NOT NULL,
+      word text NOT NULL,
+      count int NOT NULL,
       bookmark_id int REFERENCES $POSTGRES_SCHEMA.bookmarks(id)
       ON DELETE CASCADE
+    );
+    CREATE TABLE $POSTGRES_SCHEMA.keyword_scores (
+      id serial PRIMARY KEY,
+      stem text NOT NULL UNIQUE,
+      tf_idf_score float not null
     );
     CREATE TABLE $POSTGRES_SCHEMA.recommendations (
       id serial PRIMARY KEY,
