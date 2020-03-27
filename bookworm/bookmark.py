@@ -40,6 +40,13 @@ def search(search_query):
 
 def add_bookmark(payload):
     print(payload)
+    with database.con.cursor() as cur:
+        cur.execute("select id from bookmarks where chrome_id = {} limit 1".format(payload["chromeId"]))
+        row_count = cur.rowcount
+        if row_count == 1:
+            bookmark_id = cur.fetchone()[0]
+            return {"id": bookmark_id, "link": payload['link']}  # bookmark exists; no need for analysis
+
     raw_content = requests.get(payload['link']).text
     title = analyzer.get_title(raw_content)
     sanitized_content = analyzer.sanitize(raw_content)
@@ -50,8 +57,8 @@ def add_bookmark(payload):
     highlights = analyzer.generate_highlights(sanitized_content, word_frequency)
     with database.con.cursor() as cur:
         query = cur.mogrify("""INSERT INTO bookmarks (chrome_id, title, link, created_at, updated_at, highlights)
-                               VALUES (%(chrome_id)s, %(title)s, %(link)s, %(created_at)s, %(updated_at)s, %(highlights)s) 
-                               RETURNING id;
+                               VALUES (%(chrome_id)s, %(title)s, %(link)s, %(created_at)s, %(updated_at)s, %(highlights)s)
+                               RETURNING id
         """, {
             "chrome_id": payload['chromeId'], "title": title, "link": payload['link'], "created_at": get_epoch_millis(),
             "updated_at": get_epoch_millis(), "highlights": highlights
