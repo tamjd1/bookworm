@@ -66,8 +66,8 @@ def add_bookmark(payload):
     word_frequency = {x["word"]: x["count"] for x in word_scores}
     highlights = analyzer.generate_highlights(sanitized_content, word_frequency)
     with database.con.cursor() as cur:
-        query = cur.mogrify("""INSERT INTO bookmarks (chrome_id, title, link, created_at, updated_at, highlights, sanitized_data)
-                               VALUES (%(chrome_id)s, %(title)s, %(link)s, %(created_at)s, %(updated_at)s, %(highlights)s, %(sanitized_data)s)
+        query = cur.mogrify(b"""INSERT INTO bookmarks (chrome_id, title, link, created_at, updated_at, highlights, sanitized_data)
+                               VALUES (%(chrome_id)s, %(title)s, %(link)s, %(created_at)s, %(updated_at)s, %(highlights)s, E%(sanitized_data)s)
                                RETURNING id
         """, {
             "chrome_id": payload['chromeId'], "title": title, "link": payload['link'], "created_at": get_epoch_millis(),
