@@ -1,5 +1,6 @@
 from flask import Flask, request
-from rapidjson import dumps
+from rapidjson import dumps, loads
+import threading
 
 from bookworm.utils import get_headers
 from bookworm.help import api_help
@@ -37,6 +38,22 @@ def add_bookmark():
     payload = request.get_json()
     response = bookmark.add_bookmark(payload)
     return dumps(response), 200, get_headers(response)
+
+
+def __initialize_bookworm(bookmarks):
+    for b in bookmarks:
+        bookmark.add_bookmark(b)
+
+
+@app.route('/init', methods=['POST'])
+def _init():
+    print("Initializing bookworm...")
+    payload = request.get_json()
+    bookmarks = payload["bookmarks"]
+    t = threading.Thread(target=__initialize_bookworm, args=(bookmarks,))
+    t.start()
+    response = {"message": "bookworm initialization has begun with the provided bookmarks", "statusCode": 201}
+    return dumps(response), 201, get_headers(response)
 
 
 @app.route('/bookmark/<int:bookmark_id>', methods=['DELETE'])

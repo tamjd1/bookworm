@@ -3,6 +3,24 @@
 def api_help():
     return [
         {
+            "API": "/init",
+            "description": "to initialize bookworm database by bulk loading an array of bookmark links",
+            "method": "POST",
+            "payload": {
+                "bookmarks": [
+                    {"chromeId": 1, "link": "link to bookmark"},
+                    {"chromeId": 2, "link": "link to bookmark"},
+                    {"chromeId": 3, "link": "link to bookmark"},
+                    {"chromeId": 5, "link": "link to bookmark"}
+                ]
+            },
+            "responseCode": 201,
+            "response": {
+                "message": "bookworm initialization has begun with the provided bookmarks",
+                "statusCode": 201
+            }
+        },
+        {
             "API": "/search?q=search keywords",
             "description": "to search for keywords",
             "method": "GET",
