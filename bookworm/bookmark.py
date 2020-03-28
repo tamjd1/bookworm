@@ -107,36 +107,43 @@ def delete_bookmark(chrome_id):
 
 
 def get_metadata():
-    most_visited = None
-    latest = None
-    oldest = None
+    most_visited = [None, None]
+    latest = [None, None]
+    oldest = [None, None]
     with database.con.cursor() as cur:
         cur.execute("SELECT count(id) FROM bookmarks;")
         total = cur.fetchone()[0]
         if total > 0:
-            cur.execute("SELECT title FROM bookmarks WHERE visited_count = (SELECT max(visited_count) FROM bookmarks);")
-            most_visited = cur.fetchone()[0]
-            cur.execute("SELECT title FROM bookmarks WHERE created_at = (SELECT max(created_at) FROM bookmarks);")
-            latest = cur.fetchone()[0]
-            cur.execute("SELECT title FROM bookmarks WHERE created_at = (SELECT min(created_at) FROM bookmarks);")
-            oldest = cur.fetchone()[0]
+            cur.execute("""SELECT chrome_id, title FROM bookmarks WHERE
+             visited_count = (SELECT max(visited_count) FROM bookmarks);""")
+            most_visited = cur.fetchone()
+            cur.execute("""SELECT chrome_id, title FROM bookmarks WHERE
+             created_at = (SELECT max(created_at) FROM bookmarks);""")
+            latest = cur.fetchone()
+            cur.execute("""SELECT chrome_id, title FROM bookmarks WHERE
+             created_at = (SELECT min(created_at) FROM bookmarks);""")
+            oldest = cur.fetchone()
 
     return {
         "totalBookmarks": total,
-        "mostVisited": most_visited,
-        "latest": latest,
-        "oldest": oldest
+        "mostVisited": most_visited[1],
+        "mostVisitedChromeId": most_visited[0],
+        "latest": latest[1],
+        "latestChromeId": latest[0],
+        "oldest": oldest[1],
+        "oldestChromeId": oldest[0]
     }
 
 
 def get_recommended():
     result = []
     with database.con.cursor() as cur:
-        cur.execute("SELECT title, highlights FROM recommendations;")
+        cur.execute("SELECT chrome_id, title, highlights FROM recommendations;")
         for row in cur.fetchall():
             result.append({
-                "title": row[0],
-                "highlights": row[1]
+                "chromeId": row[0],
+                "title": row[1],
+                "highlights": row[2]
             })
     return result
 
@@ -154,6 +161,7 @@ def get_summary_highlights(chrome_id):
             highlights = data[1]
 
     return {
+        "chromeId": chrome_id,
         "title": title,
         "highlights": highlights
     }
