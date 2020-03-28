@@ -28,7 +28,7 @@ def api_help():
             }
         },
         {
-            "API": "/bookmark/<int:bookmark_id>",
+            "API": "/bookmark/<int:chrome_id>",
             "description": "to delete bookmark specifically from bookworm",
             "method": "DELETE",
             "responseCode": 200,
@@ -59,7 +59,7 @@ def api_help():
                 }
         },
         {
-            "API": "/highlights/<int:bookmark_id>",
+            "API": "/highlights/<int:chrome_id>",
             "description": "to get get summary highlights",
             "method": "GET",
             "responseCode": 200,

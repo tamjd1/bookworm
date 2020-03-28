@@ -51,7 +51,11 @@ def add_bookmark(payload):
         row_count = cur.rowcount
         if row_count == 1:
             bookmark_id = cur.fetchone()[0]
-            return {"id": bookmark_id, "link": payload['link']}  # bookmark exists; no need for analysis
+            return {
+                "id": bookmark_id,
+                "link": payload['link'],
+                "chromeId": payload['chromeId']
+            }  # bookmark exists; no need for analysis
 
     raw_content = requests.get(payload['link']).text
     title = analyzer.get_title(raw_content)
@@ -87,15 +91,19 @@ def add_bookmark(payload):
 
         # TODO: Update recommendation table (in subprocess)
 
-    return {"id": bookmark_id, "link": payload['link']}
+    return {
+        "id": bookmark_id,
+        "link": payload['link'],
+        "chromeId": payload['chromeId']
+    }
 
 
-def delete_bookmark(bookmark_id):
-    print(bookmark_id)
+def delete_bookmark(chrome_id):
+    print(chrome_id)
     with database.con.cursor() as cur:
-        cur.execute("DELETE FROM bookmarks WHERE id = {id};".format(id=bookmark_id))
+        cur.execute("DELETE FROM bookmarks WHERE chrome_id = {chrome_id};".format(chrome_id=chrome_id))
         database.con.commit()
-    return {"DELETED": "{bookmark_id}".format(bookmark_id=bookmark_id)}
+    return {"DELETED": "{chrome_id}".format(chrome_id=chrome_id)}
 
 
 def get_metadata():
@@ -133,12 +141,13 @@ def get_recommended():
     return result
 
 
-def get_summary_highlights(bookmark_id):
-    print(bookmark_id)
+def get_summary_highlights(chrome_id):
+    print(chrome_id)
     title = None
     highlights = None
     with database.con.cursor() as cur:
-        cur.execute("SELECT title, highlights FROM bookmarks WHERE id = {bookmark_id};".format(bookmark_id=bookmark_id))
+        cur.execute("SELECT title, highlights FROM bookmarks WHERE chrome_id = {chrome_id};".format(
+            chrome_id=chrome_id))
         data = cur.fetchone()
         if data:
             title = data[0]
