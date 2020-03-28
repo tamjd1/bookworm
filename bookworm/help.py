@@ -9,8 +9,8 @@ def api_help():
             "responseCode": 200,
             "response":
                 [
-                    {"title": "ABC", "matchedText": "keyword1"},
-                    {"title": "DEF", "matchedText": "keyword2"}
+                    {"chromeId": 1, "title": "ABC", "matchedText": "keyword1"},
+                    {"chromeId": 2, "title": "DEF", "matchedText": "keyword2"}
                 ]
          },
         {
@@ -24,6 +24,7 @@ def api_help():
             "responseCode": 200,
             "response": {
                 "id": 1,
+                "chromeId": 2,
                 "link": "link to bookmark"
             }
         },
@@ -43,8 +44,11 @@ def api_help():
                 {
                     "totalBookmarks": 12,
                     "mostVisited": "title7",
+                    "mostVisitedChromeId": 1,
                     "latest": "title12",
-                    "oldest": "title1"
+                    "latestChromeId": 2,
+                    "oldest": "title1",
+                    "oldestChromeId": 3
                 }
         },
         {
@@ -55,7 +59,8 @@ def api_help():
             "response":
                 {
                     "title": "TITLE6",
-                    "highlights": ["abc", "def", "ghi"]
+                    "highlights": ["abc", "def", "ghi"],
+                    "chromeId": 2
                 }
         },
         {
@@ -66,7 +71,8 @@ def api_help():
             "response":
                 {
                     "title": "TITLE5",
-                    "highlights": ["abc", "def", "ghi"]
+                    "highlights": ["abc", "def", "ghi"],
+                    "chromeId": 3
                 }
         }
     ]
