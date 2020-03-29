@@ -71,7 +71,7 @@ def determine_word_scores(content):
     return scores
 
 
-def generate_highlights(content, frequency_table, num_highlights=1):
+def generate_highlights(content, frequency_table, num_highlights=3):
     sentences = sent_tokenize(content)
 
     sentence_scores = {}
