@@ -20,13 +20,9 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
       stem text NOT NULL,
       word text NOT NULL,
       count int NOT NULL,
+      tf_idf_score float NOT NULL,
       bookmark_id int REFERENCES $POSTGRES_SCHEMA.bookmarks(id)
       ON DELETE CASCADE
-    );
-    CREATE TABLE $POSTGRES_SCHEMA.keyword_scores (
-      id serial PRIMARY KEY,
-      stem text NOT NULL UNIQUE,
-      tf_idf_score float not null
     );
     CREATE TABLE $POSTGRES_SCHEMA.recommendations (
       id serial PRIMARY KEY,

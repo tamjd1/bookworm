@@ -18,29 +18,34 @@ def search(search_query):
     print(search_query)
     stemmed_search_terms = analyzer.word_stemmer(search_query)
     with database.con.cursor() as cur:
-        query = cur.mogrify("""select distinct a.id, a.chrome_id, a.link, a.title, a.sanitized_data, c.tf_idf_score
-                        from bookmarks a
-                        join keywords b on a.id = b.bookmark_id
-                        join keyword_scores c on b.stem = c.stem
-                        where c.stem in %s
-                          and c.tf_idf_score > 0
-                        order by c.tf_idf_score
-                        limit 10
+        query = cur.mogrify(""" with scores as (
+                                    select bookmark_id, stem, word, count, tf_idf_score
+                                    from keywords
+                                    where stem in %s
+                                        and tf_idf_score > 0
+                                )
+                                select b.id as bookmark_id, b.chrome_id, b.link, b.title, b.sanitized_data, rank() over (order by s.tf_idf_score desc)
+                                from bookmarks b
+                                join scores s on b.id = s.bookmark_id
+                                order by rank
         """, (tuple(stemmed_search_terms),))
         cur.execute(query)
+        appended_bookmarks = []
         for row in cur.fetchall():
             print(row)
+            if row[0] in appended_bookmarks:
+                continue
             results.append({
                 "id": row[0],
                 "chromeId": row[1],
                 "link": row[2],
                 "title": row[3],
-                "score": row[5],
                 "matchedText": "...".join(analyzer.get_matching_sentences(row[4].tobytes().decode('utf-8'), search_query))
             })
             cur.execute("UPDATE bookmarks SET visited_count = visited_count + 1 WHERE id = {bookmark_id}".format(
                 bookmark_id=row[0]))
             database.con.commit()
+            appended_bookmarks.append(row[0])
     return results
 
 
@@ -60,31 +65,34 @@ def add_bookmark(payload):
     raw_content = requests.get(payload['link']).text
     title = analyzer.get_title(raw_content)
     sanitized_content = analyzer.sanitize(raw_content)
-    scores = analyzer.determine_word_scores(sanitized_content)
-    word_count = scores["word_count"]
-    word_scores = scores["word_scores"]
-    word_frequency = {x["word"]: x["count"] for x in word_scores}
-    highlights = analyzer.generate_highlights(sanitized_content, word_frequency)
+
     with database.con.cursor() as cur:
-        query = cur.mogrify(b"""INSERT INTO bookmarks (chrome_id, title, link, created_at, updated_at, highlights, sanitized_data)
-                               VALUES (%(chrome_id)s, %(title)s, %(link)s, %(created_at)s, %(updated_at)s, %(highlights)s, E%(sanitized_data)s)
+        query = cur.mogrify(b"""INSERT INTO bookmarks (chrome_id, title, link, created_at, updated_at, sanitized_data)
+                               VALUES (%(chrome_id)s, %(title)s, %(link)s, %(created_at)s, %(updated_at)s, E%(sanitized_data)s)
                                RETURNING id
         """, {
             "chrome_id": payload['chromeId'], "title": title, "link": payload['link'], "created_at": get_epoch_millis(),
-            "updated_at": get_epoch_millis(), "highlights": highlights, "sanitized_data": sanitized_content
+            "updated_at": get_epoch_millis(), "sanitized_data": sanitized_content
         })
         cur.execute(query)
         bookmark_id = cur.fetchone()[0]
 
-        values = [(bookmark_id, x["word"], x["stem"], x["count"]) for x in word_scores]
-        args_str = b','.join(cur.mogrify("(%s,%s,%s,%s)", x) for x in values)
-        query = cur.mogrify(b"insert into bookworm.keywords (bookmark_id, word, stem, count) values " + args_str)
+        word_scores = analyzer.determine_word_scores()
+        word_frequency = {x["word"]: x["count"] for x in word_scores[bookmark_id]}
+        highlights = analyzer.generate_highlights(sanitized_content, word_frequency)
+
+        query = cur.mogrify("update bookmarks set highlights = %s where id = %s", (highlights, bookmark_id))
         cur.execute(query)
 
-        values = [(x["stem"], x["tf_idf_score"]) for x in word_scores]
-        args_str = b','.join(cur.mogrify("(%s,%s)", x) for x in values)
-        query = cur.mogrify(b"insert into bookworm.keyword_scores (stem, tf_idf_score) values " + args_str +
-                            b" on conflict (stem) do update set tf_idf_score = excluded.tf_idf_score ")
+        cur.execute("truncate table keywords")
+
+        values = []
+        for bookmark_id, scores in word_scores.items():
+            for x in scores:
+                values.append((bookmark_id, x["word"], x["stem"], x["count"], x["tf_idf_score"]))
+
+        args_str = b','.join(cur.mogrify("(%s,%s,%s,%s,%s)", x) for x in values)
+        query = cur.mogrify(b"insert into keywords (bookmark_id, word, stem, count, tf_idf_score) values " + args_str)
         cur.execute(query)
 
         database.con.commit()

@@ -1,9 +1,11 @@
 from bs4 import BeautifulSoup as bs
+from string import punctuation
 from nltk import download
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize, sent_tokenize
 import rapidjson as rj
+import math
 
 from bookworm import database
 
@@ -25,48 +27,58 @@ def get_title(raw):
     return parsed.find("title").text
 
 
-def determine_word_scores(content):
-    stop_words = set(stopwords.words("english"))
-    words = word_tokenize(content)
+def determine_word_scores():
+    stop_words = set(stopwords.words("english") + list(punctuation))
     stemmer = PorterStemmer()
-    frequency_table = {}
-    for word in words:
-        stemmed_word = stemmer.stem(word)
-        if stemmed_word in stop_words:
-            continue
-        if stemmed_word in frequency_table:
-            frequency_table[stemmed_word][1] += 1
-        else:
-            frequency_table[stemmed_word] = [word, 1]
 
-    df_scores = {k: 1 for k in frequency_table.keys()}
+    scores = {}
+    corpus = []
+
     with database.con.cursor() as cur:
-        query = cur.mogrify("""select count(distinct bookmark_id), stem from bookworm.keywords
-                               where stem in %s
-                               group by stem
-        """, (tuple(frequency_table.keys()),))
+        query = "select id, sanitized_data from bookmarks"
         cur.execute(query)
         for row in cur.fetchall():
-            df_scores[row[1]] += int(row[0])
+            corpus.append({"bookmark_id": row[0], "content": row[1]})
 
-        cur.execute("select count(*) from bookworm.bookmarks")
-        data = cur.fetchone()
-        num_documents = data[0]
+    num_documents = len(corpus)
 
-    scores = {
-        "word_count": len(words),
-        "word_scores": []
-    }
+    for x in corpus:
+        bookmark_id = x["bookmark_id"]
+        content = x["content"].tobytes().decode('utf-8')
 
-    for stem, (word, count) in frequency_table.items():
-        tf = count / len(words)
-        idf = num_documents / df_scores[stem]
-        scores["word_scores"].append({
-            "stem": stem,
-            "word": word,
-            "count": count,
-            "tf_idf_score": tf*idf
-        })
+        words = word_tokenize(content)
+        frequency_table = {}
+        for word in words:
+            stemmed_word = stemmer.stem(word)
+            if stemmed_word in stop_words:
+                continue
+            if stemmed_word in frequency_table:
+                frequency_table[stemmed_word][1] += 1
+            else:
+                frequency_table[stemmed_word] = [word, 1]
+
+        df_scores = {k: 1 for k in frequency_table.keys()}
+        with database.con.cursor() as cur:
+            query = cur.mogrify("""select count(distinct bookmark_id), stem from keywords
+                                   where stem in %s 
+                                       and bookmark_id != {}
+                                   group by stem
+            """.format(bookmark_id), (tuple(frequency_table.keys()),))
+            cur.execute(query)
+            for row in cur.fetchall():
+                df_scores[row[1]] += int(row[0])
+
+        scores[bookmark_id] = []
+
+        for stem, (word, count) in frequency_table.items():
+            tf = count / float(len(words))
+            idf = math.log10(num_documents / (float(df_scores[stem]) + 1))
+            scores[bookmark_id].append({
+                "stem": stem,
+                "word": word,
+                "count": count,
+                "tf_idf_score": tf*idf
+            })
 
     return scores
 
@@ -129,8 +141,9 @@ def get_matching_sentences(text, search_term):
     for s in sentences:
         for w in keywords:
             if w.lower() in s.lower():
-                matching_sentences.append(s)
-                match_count += 1
+                if s not in matching_sentences:
+                    matching_sentences.append(s)
+                    match_count += 1
         if match_count >= 3:
             break
     return matching_sentences
