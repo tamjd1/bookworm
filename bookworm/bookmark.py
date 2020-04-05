@@ -145,14 +145,15 @@ def get_metadata():
 
 def get_recommended():
     result = []
-    with database.con.cursor() as cur:
-        cur.execute("SELECT chrome_id, title, highlights FROM recommendations;")
-        for row in cur.fetchall():
-            result.append({
-                "chromeId": row[0],
-                "title": row[1],
-                "highlights": row[2]
-            })
+    # with database.con.cursor() as cur:
+    #     cur.execute("SELECT chrome_id, title, highlights FROM recommendations;")
+    #     for row in cur.fetchall():
+    result.append({
+        "chromeId": 999,
+        "title": "Flat Earth - Wikipedia",
+        "highlights": ["Despite the scientific fact of Earth's sphericity, pseudoscientific[5] flat Earth conspiracy theories are espoused by modern flat Earth societies and, increasingly, by unaffiliated individuals using social media."],
+        "link": "https://en.wikipedia.org/wiki/Flat_Earth"
+    })
     return result
 
 
