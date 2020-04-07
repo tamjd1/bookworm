@@ -20,6 +20,7 @@ Project: bookworm
 
 ### To add the chrome extension
 
+- Go to ``chrome://extensions/`` in your browser
 - Enable Developer mode
 - Load the ``chrome_extension`` folder using ``Load unpacked`` option
 - Go to ``chrome://bookmarks/`` in your browser
