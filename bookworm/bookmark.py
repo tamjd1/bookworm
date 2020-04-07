@@ -22,7 +22,7 @@ def search(search_query):
                                     select bookmark_id, stem, word, count, tf_idf_score
                                     from keywords
                                     where stem in %s
-                                        and tf_idf_score > 0
+                                        -- and tf_idf_score > 0
                                 )
                                 select b.id as bookmark_id, b.chrome_id, b.link, b.title, b.sanitized_data, rank() over (order by s.tf_idf_score desc)
                                 from bookmarks b

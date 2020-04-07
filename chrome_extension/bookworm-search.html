@@ -1,0 +1,103 @@
+<html>
+<head>
+<link rel=stylesheet" href="jqueryui/jquery-ui.css">
+  <script src="jquery/jquery.min.js"></script>
+  <script src="jqueryui/jquery-ui.min.js"></script>
+  <script src="bookworm-search.js"></script>
+  <style>
+/* Popup container - can be anything you want */
+.popup {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* The actual popup */
+.popup .popuptext {
+  visibility: hidden;
+  width: 160px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -80px;
+}
+
+/* Popup arrow */
+.popup .popuptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+/* Toggle this class - hide and show the popup */
+.popup .show {
+  visibility: visible;
+  -webkit-animation: fadeIn 1s;
+  animation: fadeIn 1s;
+}
+
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+  from {opacity: 0;} 
+  to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity:1 ;}
+  
+
+}
+.ui-helper-hidden-accessible {
+	border: 0;
+	clip: rect(0 0 0 0);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+} 
+h1 {
+	padding-top: 50px;
+} 
+		#searchbar {text-align: center;
+			padding-top: 2.5%;
+			}
+		#search {width: 75%;
+			border: 3px solid black;
+			border-radius: 5px;
+			padding: 20px;
+			}
+	#results {
+		padding-left: 3%;
+		padding-right: 10%;
+	}
+	#logo {
+		text-align: center;
+	}
+</style>
+
+  <title>Bookworm Search Results</title>
+</head>
+<body>
+  <div id="logo"><img src="icon.png" alt="Bookworm Logo"></div>
+  <div id="searchbar"><input id="search" placeholder="Search Bookmark..."></div>
+  <div id="results"></div>  
+  </body>
+</html>

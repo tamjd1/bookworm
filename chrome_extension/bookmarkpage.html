@@ -1,0 +1,90 @@
+<html>
+<head>
+<link rel=stylesheet" href="jqueryui/jquery-ui.min.css">
+      <style>
+		.no-close .ui-dialog-titlebar-close {
+			display: none;
+			}
+         .ui-widget-overlay, ui-dialog-content, .ui-widget-content, .ui-widget-header,.ui-state-default, ui-button {
+            background:#ffffff;
+            color: #000000;
+            font-weight: bold;
+			text-align: center;
+
+         }
+		 
+		 .ui-dialog-title{
+			text-align: center;
+		 }
+		 table,th,td {border: 'none';
+			background:#ffffff;
+            color: #000000;
+            font-weight: bold;
+			font-size: 150%;
+			text-align: center;
+			padding-right: 20px;
+			padding-bottom: 20px;
+			} 
+			
+		.ui-dialog {
+			border-width: 2px;
+			border-style: solid;			
+			border-radius: 4px;
+			}
+			
+
+		#searchbar {text-align: center;
+			padding-top: 2.5%;
+			padding-bottom: 2.5%;
+			}
+		#search {
+			width: 75%;
+			border: 3px solid black;
+			border-radius: 5px;
+			padding: 20px;
+			}
+		table, th, tr.entryBox {
+			border: 3px black;
+			border-radius: 3px;
+			padding: 10px;
+		}
+		#bookmarks {
+			padding-top: 2.5%;
+			padding-left: 30%;
+		}
+		#logo {
+			text-align: center;
+		}
+		#rbox{
+			text-align: center;
+
+			
+		}
+		#recommended {
+			border: 3px solid black;
+			border-radius: 5px;
+			width:30%;
+			margin-left: 35%;
+			margin-right: 35%;
+			padding: 5px;
+			}
+      </style>
+  <script src="jquery/jquery.min.js"></script>
+  <script src="jqueryui/jquery-ui.min.js"></script>
+  <script src="bookmarkpage.js"></script>
+  <title>Bookworm - The Smart Bookmark Manager</title>
+</head>
+<body>
+  <div id="logo"><img src="icon.png" alt="Bookworm Logo"></div>
+  <!-- <div id="metadata"></div>  -->
+  <div id="searchbar"><input id="search" placeholder="Search Bookmark..."></div>
+  <div id="rBox">
+  <div id="recommended"></div>
+  </div>
+  <div id="bookmarks"></div>
+  <!-- <div id="addbookmark"></div> -->
+    <div id="editdialog"></div>
+	  <div id="deletedialog"></div>
+  <div id="adddialog"></div>
+  </body>
+</html>

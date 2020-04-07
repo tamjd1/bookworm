@@ -1,0 +1,38 @@
+{
+  "name": "Bookworm",
+  "version": "0.50",
+  "description": "A smart bookmark manager test",
+  "permissions": [
+    "bookmarks",
+	"http://localhost:5000/",
+	"notifications",
+	"history"
+  ],
+    "chrome_url_overrides" : {
+    "bookmarks": "bookmarkpage.html"
+  },
+  "externally_connectable":     {
+      "matches": ["http://localhost:5000/"]     
+    }
+	,	
+  "browser_action": {
+      "default_title": "Bookworm",
+      "default_icon": "icon.png",
+      "default_popup": "popup.html"
+  },  
+  "background": {
+    "scripts": ["jquery/jquery.min.js", "axios/axios.min.js", "background.js"],
+    "persistent": true
+  },
+      "content_scripts": [ 
+        { 
+            "js": [ "jquery/jquery.min.js", "jqueryui/jquery-ui.min.js", "axios/axios.min.js"],
+			"css": ["jqueryui/jquery-ui.css"],
+             "matches": [ "http://*/*", "https://*/*"]
+         }
+     ]
+,	 
+  "manifest_version": 2,
+  "content_security_policy": "script-src 'self' https://ajax.googleapis.com; object-src 'self'"
+  
+}
